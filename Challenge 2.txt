@@ -1,0 +1,34 @@
+#for only accessing user data from  linux in Azure:
+
+curl -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance/compute/userData?api-version=2021-01-01&format=text" | base64 --decode
+
+# below extracted from google to find allow occurences of keys
+
+
+
+from get_metadata import get_metadata
+
+
+# https://stackoverflow.com/questions/9807634/find-all-occurrences-of-a-key-in-nested-python-dictionaries-and-lists
+def gen_dict_extract(key, var):
+    if hasattr(var, 'items'):
+        for k, v in var.items():
+            if k == key:
+                yield v
+            if isinstance(v, dict):
+                for result in gen_dict_extract(key, v):
+                    yield result
+            elif isinstance(v, list):
+                for d in v:
+                    for result in gen_dict_extract(key, d):
+                        yield result
+
+
+def find_key(key):
+    metadata = get_metadata()
+    return list(gen_dict_extract(key, metadata))
+
+
+if __name__ == '__main__':
+    key = input("What key would you like to find?\n")
+    print(find_key(key))
